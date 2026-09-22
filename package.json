@@ -2,17 +2,9 @@
   "name": "ai-tryon-platform",
   "private": true,
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "dev:web": "turbo dev --filter=web",
-    "dev:api": "cd apps/api && uvicorn app.main:app --reload --port 8000",
-    "db:migrate": "cd apps/api && alembic upgrade head",
-    "db:revision": "cd apps/api && alembic revision --autogenerate",
-    "worker": "cd apps/api && celery -A app.tasks.celery_app worker --loglevel=info"
-  },
-  "devDependencies": {
-    "turbo": "^2.0.0"
-  },
-  "packageManager": "pnpm@9.0.0"
+    "dev": "npm --prefix apps/web run dev",
+    "build": "cd apps/web && npm install && npm run build",
+    "lint": "npm --prefix apps/web run lint",
+    "start": "npm --prefix apps/web run start"
+  }
 }
