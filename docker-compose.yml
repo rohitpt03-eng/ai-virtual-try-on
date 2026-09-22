@@ -1,0 +1,125 @@
+version: "3.9"
+
+services:
+  # ---------- Frontend ----------
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web/src:/app/src
+    networks:
+      - tryon-net
+
+  # ---------- API ----------
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/tryon_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - FAL_KEY=${FAL_KEY}
+      - UPLOAD_DIR=/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app
+      - upload_data:/app/uploads
+    networks:
+      - tryon-net
+
+  # ---------- Celery Worker ----------
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/tryon_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - FAL_KEY=${FAL_KEY}
+      - UPLOAD_DIR=/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api:/app
+      - upload_data:/app/uploads
+    networks:
+      - tryon-net
+
+  # ---------- Celery Flower (Monitoring) ----------
+  flower:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    command: celery -A app.tasks.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - tryon-net
+
+  # ---------- PostgreSQL ----------
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tryon_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tryon-net
+
+  # ---------- Redis ----------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tryon-net
+
+networks:
+  tryon-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  upload_data:
