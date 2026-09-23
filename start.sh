@@ -5,7 +5,7 @@ echo "=========================================================="
 echo "    🚀 Starting AI Virtual Try-On Platform (Next.js 15)"
 echo "=========================================================="
 
-cd "$(dirname "$0")/apps/web"
+cd "$(dirname "$0")"
 
 if [ ! -d "node_modules" ]; then
   echo "📦 Installing frontend dependencies..."

@@ -1,10 +1,33 @@
 {
-  "name": "ai-tryon-platform",
+  "name": "web",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm --prefix apps/web run dev",
-    "build": "cd apps/web && npm install && npm run build",
-    "lint": "npm --prefix apps/web run lint",
-    "start": "npm --prefix apps/web run start"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "lucide-react": "^0.447.0",
+    "next": "15.1.0",
+    "react": "^19.0.0",
+    "react-compare-slider": "^3.1.0",
+    "react-dom": "^19.0.0",
+    "react-dropzone": "^14.2.3",
+    "react-hook-form": "^7.53.0",
+    "zod": "^3.23.8",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "typescript": "^5"
   }
 }
